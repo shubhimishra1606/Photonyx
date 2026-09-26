@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/* Theme tokens used by the app's Tailwind classes. */
+@theme {
+  --color-canvas: #f7faf7;
+  --color-canvas-dark: #0b1510;
+  --color-surface: #ffffff;
+  --color-surface-dark: #14221a;
+  --color-ink: #17251b;
+  --color-ink-dark: #edf5ee;
+  --color-muted: #647468;
+  --color-muted-dark: #a1b2a4;
+
+  --color-forest-50: #f0f7f1;
+  --color-forest-100: #dcecdf;
+  --color-forest-200: #bfdbbf;
+  --color-forest-300: #9bc79e;
+  --color-forest-400: #70ad76;
+  --color-forest-500: #4c9256;
+  --color-forest-600: #377843;
+  --color-forest-700: #2d6037;
+  --color-forest-800: #264d2e;
+  --color-forest-900: #203f27;
+
+  --font-body: "Inter", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --shadow-soft: 0 8px 24px rgb(23 37 27 / 8%);
+  --shadow-softer: 0 4px 14px rgb(23 37 27 / 10%);
+  --shadow-glow: 0 0 28px rgb(76 146 86 / 24%);
+}
+
+/* The theme toggle adds .dark to <html>, so dark: utilities follow it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-duration: 300ms;
+}
+
+.dark body {
+  background-color: var(--color-canvas-dark);
+  color: var(--color-ink-dark);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background-color: var(--color-forest-200);
+  color: var(--color-forest-900);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-forest-200);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--color-forest-800);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-forest-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-forest-600), var(--color-teal-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid rgb(0 0 0 / 5%);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+.dark .card {
+  background-color: var(--color-surface-dark);
+  border-color: rgb(255 255 255 / 5%);
+}

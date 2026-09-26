@@ -1,0 +1,78 @@
+from pathlib import Path
+import torch
+import timm
+from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+from torchvision import transforms
+
+app = FastAPI(title="PlantDx API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+MODEL_PATH = (
+    Path(__file__).resolve().parent.parent
+    /"backend"
+    / "model"
+    / "plantdx_efficientnet_b0.pth"
+)
+
+checkpoint = torch.load(MODEL_PATH, map_location=device)
+
+classes = checkpoint["classes"]
+num_classes = checkpoint["num_classes"]
+
+model = timm.create_model(
+    "efficientnet_b0",
+    pretrained=False,
+    num_classes=num_classes
+)
+
+model.load_state_dict(checkpoint["model_state_dict"])
+
+model = model.to(device)
+model.eval()
+
+transform=transforms.Compose([
+    transforms.Resize((224,224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+])
+
+print("Model loaded!")
+print("Device:", device)
+print("Classes:", num_classes)
+
+@app.get("/")
+def home():
+    return {
+        "message": "PlantDx API is running!",
+        "device": str(device),
+        "classes": num_classes
+    }
+
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
+    image = Image.open(file.file).convert("RGB")
+    image = transform(image)
+    image = image.unsqueeze(0).to(device)
+    with torch.no_grad():
+        output = model(image)
+        probabilities = torch.softmax(output, dim=1)
+
+    confidence, predicted = torch.max(probabilities, 1)
+    return {
+        "disease": classes[predicted.item()],
+        "confidence": round(confidence.item() * 100, 2)
+    }
