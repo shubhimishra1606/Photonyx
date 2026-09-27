@@ -7,7 +7,7 @@ export default function LoadingAnimation({ label = 'Analyzing your plant...' }) 
       <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-forest-50 dark:bg-white/5 overflow-hidden">
         <Leaf className="text-forest-500 dark:text-forest-300" size={30} />
         <motion.span
-          className="absolute inset-x-0 h-8 bg-gradient-to-b from-teal-400/0 via-teal-400/40 to-teal-400/0"
+          className="absolute inset-x-0 h-8 bg-linear-to-b from-teal-400/0 via-teal-400/40 to-teal-400/0"
           animate={{ y: ['-100%', '100%'] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
         />
@@ -15,7 +15,7 @@ export default function LoadingAnimation({ label = 'Analyzing your plant...' }) 
       <div>
         <p className="text-sm font-medium text-ink dark:text-ink-dark">{label}</p>
         <p className="mt-1 text-xs text-muted dark:text-muted-dark">
-          Running inference through PlantDx's vision model
+          Running inference through Photonyx's vision model
         </p>
       </div>
       <div className="flex gap-1.5">

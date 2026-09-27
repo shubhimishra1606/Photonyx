@@ -22,7 +22,7 @@ function ToggleSwitch({ checked, onChange, label }) {
       <span
         className={cn(
           'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-softer transition-transform',
-          checked ? 'translate-x-[22px]' : 'translate-x-0.5'
+          checked ? 'translate-x-5.5' : 'translate-x-0.5'
         )}
       />
     </button>
@@ -72,7 +72,7 @@ export default function Settings() {
 
       <SectionCard title="Profile">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-forest-500 to-teal-500 text-lg font-semibold text-white">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-forest-500 to-teal-500 text-lg font-semibold text-white">
             {currentUser.avatarInitials}
           </div>
           <button className="rounded-full border border-black/10 dark:border-white/10 px-4 py-2 text-sm font-medium text-ink dark:text-ink-dark hover:border-forest-300">
@@ -177,7 +177,7 @@ export default function Settings() {
             <Info size={16} />
           </span>
           <div>
-            <p className="text-sm font-semibold text-ink dark:text-ink-dark">PlantDx AI</p>
+            <p className="text-sm font-semibold text-ink dark:text-ink-dark">Photonyx AI</p>
             <p className="mt-0.5 text-sm text-muted dark:text-muted-dark">
               AI-powered plant disease detection system.
             </p>

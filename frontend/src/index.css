@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Theme tokens used by the app's Tailwind classes. */
+
 @theme {
   --color-canvas: #f7faf7;
   --color-canvas-dark: #0b1510;

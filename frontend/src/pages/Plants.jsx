@@ -19,7 +19,7 @@ export default function Plants() {
       <Header
         eyebrow="Plant Library"
         title="Plant Library"
-        subtitle="Browse supported plants and the conditions PlantDx can detect."
+        subtitle="Browse supported plants and the conditions Photonyx can detect."
       />
       <div className="lg:hidden">
         <h1 className="text-2xl font-semibold tracking-tight text-ink dark:text-ink-dark">

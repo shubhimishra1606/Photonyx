@@ -9,7 +9,7 @@ export default function PlantCard({ plant }) {
         to={`/plants/${plant.id}`}
         className="card group flex flex-col gap-3 p-5 transition-shadow hover:shadow-glow"
       >
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-forest-50 to-teal-50 dark:from-white/5 dark:to-white/5 text-3xl">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-forest-50 to-teal-50 dark:from-white/5 dark:to-white/5 text-3xl">
           {plant.image}
         </div>
         <div>

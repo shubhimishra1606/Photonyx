@@ -39,7 +39,7 @@ export default function ImagePreview({
         </button>
         {isAnalyzing && (
           <motion.span
-            className="absolute inset-x-0 h-16 bg-gradient-to-b from-teal-300/0 via-teal-300/50 to-teal-300/0"
+            className="absolute inset-x-0 h-16 bg-linear-to-b from-teal-300/0 via-teal-300/50 to-teal-300/0"
             animate={{ y: ['-20%', '340%'] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
           />

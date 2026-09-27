@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from torchvision import transforms
 
-app = FastAPI(title="PlantDx API")
+app = FastAPI(title="Photonyx API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODEL_PATH = (
     Path(__file__).resolve().parent.parent
     /"backend"
-    / "model"
+    / "models"
     / "plantdx_efficientnet_b0.pth"
 )
 
@@ -57,7 +57,7 @@ print("Classes:", num_classes)
 @app.get("/")
 def home():
     return {
-        "message": "PlantDx API is running!",
+        "message": "Photonyx API is running!",
         "device": str(device),
         "classes": num_classes
     }

@@ -4,7 +4,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useLocalStorage('plantdx-theme', 'light')
+  const [theme, setTheme] = useLocalStorage('Photonyx-theme', 'light')
 
   useEffect(() => {
     const root = document.documentElement

@@ -18,7 +18,7 @@ import { Moon, Sun } from 'lucide-react'
 
 const STEPS = [
   { icon: UploadCloud, title: 'Upload', description: 'Add a photo of any leaf showing signs of stress.' },
-  { icon: ScanLine, title: 'Analyze', description: "PlantDx's model scans the leaf for disease patterns." },
+  { icon: ScanLine, title: 'Analyze', description: "Photonyx's model scans the leaf for disease patterns." },
   { icon: BookOpenText, title: 'Understand', description: 'Get the disease name, confidence, and context.' },
   { icon: ClipboardCheck, title: 'Act', description: 'Follow clear, prioritized recommendations.' },
 ]
@@ -84,7 +84,7 @@ export default function Landing() {
         >
           <p className="inline-flex items-center gap-2 rounded-full border border-forest-200 dark:border-forest-800 bg-forest-50 dark:bg-forest-900/30 px-3.5 py-1.5 text-xs font-medium text-forest-700 dark:text-forest-300">
             <Sparkles size={13} />
-            PlantDx AI
+            Photonyx AI
           </p>
           <h1 className="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-ink dark:text-ink-dark sm:text-5xl">
             See the disease.
@@ -130,10 +130,10 @@ export default function Landing() {
               </span>
             </div>
 
-            <div className="relative mt-4 flex h-44 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-forest-50 to-teal-50 dark:from-forest-900/20 dark:to-teal-900/10 text-6xl">
+            <div className="relative mt-4 flex h-44 items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-forest-50 to-teal-50 dark:from-forest-900/20 dark:to-teal-900/10 text-6xl">
               🍅
               <motion.span
-                className="absolute inset-x-0 h-10 bg-gradient-to-b from-teal-300/0 via-teal-300/60 to-teal-300/0"
+                className="absolute inset-x-0 h-10 bg-linear-to-b from-teal-300/0 via-teal-300/60 to-teal-300/0"
                 animate={{ y: ['-10%', '400%'] }}
                 transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
               />
@@ -160,7 +160,7 @@ export default function Landing() {
       {/* How it works */}
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
         <h2 className="text-2xl font-semibold tracking-tight text-ink dark:text-ink-dark">
-          How PlantDx works
+          How Photonyx works
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map(({ icon: Icon, title, description }, i) => (
@@ -206,15 +206,15 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Why PlantDx */}
+      {/* Why Photonyx */}
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
         <h2 className="text-2xl font-semibold tracking-tight text-ink dark:text-ink-dark">
-          Why PlantDx?
+          Why Photonyx?
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {WHY_CARDS.map(({ icon: Icon, title, description }) => (
             <div key={title} className="card p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-forest-500 to-teal-500 text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-forest-500 to-teal-500 text-white">
                 <Icon size={16} />
               </span>
               <h3 className="mt-3 text-base font-semibold text-ink dark:text-ink-dark">{title}</h3>
@@ -226,12 +226,12 @@ export default function Landing() {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-6xl px-5 pb-20 pt-4 sm:px-8">
-        <div className="card relative overflow-hidden bg-gradient-to-br from-forest-600 to-teal-600 px-8 py-14 text-center">
+        <div className="card relative overflow-hidden bg-linear-to-br from-forest-600 to-teal-600 px-8 py-14 text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-white">
             Start your first scan
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/80">
-            Upload a leaf photo and see what PlantDx detects in seconds.
+            Upload a leaf photo and see what Photonyx detects in seconds.
           </p>
           <Link
             to="/detect"
@@ -242,7 +242,7 @@ export default function Landing() {
           </Link>
         </div>
         <p className="mt-8 text-center text-xs text-muted dark:text-muted-dark">
-          PlantDx AI — AI-powered plant disease detection system.
+          Photonyx AI — AI-powered plant disease detection system.
         </p>
       </section>
     </div>

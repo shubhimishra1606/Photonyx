@@ -77,7 +77,7 @@ export default function PredictionCard({ result }) {
         </div>
       </div>
 
-      <p className="rounded-xl bg-forest-50/60 dark:bg-white/[0.03] px-4 py-3 text-xs leading-relaxed text-muted dark:text-muted-dark">
+      <p className="rounded-xl bg-forest-50/60 dark:bg-white/3 px-4 py-3 text-xs leading-relaxed text-muted dark:text-muted-dark">
         AI predictions are for informational purposes and should be verified by an
         agricultural expert.
       </p>

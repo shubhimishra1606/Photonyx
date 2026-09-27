@@ -48,7 +48,7 @@ export default function PlantDetail() {
       </Link>
 
       <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-forest-50 to-teal-50 dark:from-white/5 dark:to-white/5 text-4xl">
+        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-forest-50 to-teal-50 dark:from-white/5 dark:to-white/5 text-4xl">
           {plant.image}
         </span>
         <div>

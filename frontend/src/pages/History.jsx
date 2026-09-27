@@ -56,7 +56,7 @@ export default function History() {
       <Header
         eyebrow="Scan History"
         title="Scan History"
-        subtitle="Browse and search every scan PlantDx has recorded."
+        subtitle="Browse and search every scan Photonyx has recorded."
       />
       <div className="lg:hidden">
         <h1 className="text-2xl font-semibold tracking-tight text-ink dark:text-ink-dark">
@@ -138,13 +138,13 @@ export default function History() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-xl bg-forest-50/60 dark:bg-white/[0.03] px-4 py-3">
+              <div className="rounded-xl bg-forest-50/60 dark:bg-white/3 px-4 py-3">
                 <p className="text-muted dark:text-muted-dark">Confidence</p>
                 <p className="mt-1 font-semibold text-ink dark:text-ink-dark">
                   {selectedScan.confidence.toFixed(1)}%
                 </p>
               </div>
-              <div className="rounded-xl bg-forest-50/60 dark:bg-white/[0.03] px-4 py-3">
+              <div className="rounded-xl bg-forest-50/60 dark:bg-white/3 px-4 py-3">
                 <p className="text-muted dark:text-muted-dark">Date</p>
                 <p className="mt-1 font-semibold text-ink dark:text-ink-dark">
                   {formatDate(selectedScan.date)}

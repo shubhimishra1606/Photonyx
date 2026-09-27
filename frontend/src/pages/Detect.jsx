@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Camera, X } from 'lucide-react'
+import Cropper from 'react-easy-crop'
 
 import Header from '../components/Header'
 import UploadBox from '../components/UploadBox'
@@ -19,6 +20,44 @@ const STATES = {
   RESULT: 'result',
 }
 
+const createCroppedFile = async (imageSrc, pixelCrop) => {
+  const image = new Image()
+  image.src = imageSrc
+
+  await new Promise((resolve) => {
+    image.onload = resolve
+  })
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  canvas.width = pixelCrop.width
+  canvas.height = pixelCrop.height
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  )
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      const file = new File(
+        [blob],
+        `cropped-leaf-${Date.now()}.jpg`,
+        { type: 'image/jpeg' }
+      )
+      resolve(file)
+    }, 'image/jpeg', 0.95)
+  })
+}
+
 export default function Detect() {
   const location = useLocation()
   const { showToast } = useToast()
@@ -29,6 +68,9 @@ export default function Detect() {
   const [result, setResult] = useState(null)
 
   const [cameraOpen, setCameraOpen] = useState(false)
+  const [cropOpen, setCropOpen] = useState(false)
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
 
   const objectUrlRef = useRef(null)
   const videoRef = useRef(null)
@@ -135,6 +177,7 @@ export default function Detect() {
 
         closeCamera()
         handleFileSelected(file)
+        setCropOpen(true)
       },
       'image/jpeg',
       0.9
@@ -209,6 +252,88 @@ export default function Detect() {
 
   return (
     <>
+
+    <AnimatePresence>
+  {cropOpen && imageUrl && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+    >
+      <div className="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900">
+
+        <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+          <h2 className="font-semibold text-gray-900 dark:text-white">
+            Crop Leaf
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Adjust the box around the leaf, then click Use This Leaf.
+          </p>
+        </div>
+
+        <div className="relative h-[60vh] bg-black">
+          <Cropper
+            image={imageUrl}
+            crop={crop}
+            zoom={zoom}
+            aspect={1}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, croppedAreaPixels) => {
+              window.croppedAreaPixels = croppedAreaPixels
+            }}
+          />
+        </div>
+
+        <div className="flex items-center gap-3 px-5 py-4">
+          <span className="text-sm text-gray-600 dark:text-gray-300">
+            Zoom
+          </span>
+
+          <input
+            type="range"
+            min={1}
+            max={3}
+            step={0.1}
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="flex-1"
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 px-5 pb-5">
+          <button
+            type="button"
+            onClick={() => setCropOpen(false)}
+            className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              const croppedFile = await createCroppedFile(
+                imageUrl,
+                window.croppedAreaPixels
+              )
+
+              setCropOpen(false)
+              handleFileSelected(croppedFile)
+            }}
+            className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white"
+          >
+            Use This Leaf
+          </button>
+        </div>
+
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+
       {/* CAMERA MODAL */}
       <AnimatePresence>
         {cameraOpen && (
@@ -252,7 +377,7 @@ export default function Detect() {
                   autoPlay
                   playsInline
                   muted
-                  className="max-h-[65vh] min-h-[300px] w-full object-contain"
+                  className="max-h-[65vh] min-h-75 w-full object-contain"
                 />
 
                 {/* Camera guide */}

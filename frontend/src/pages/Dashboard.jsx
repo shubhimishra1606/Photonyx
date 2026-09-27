@@ -36,7 +36,7 @@ export default function Dashboard() {
       <Header
         eyebrow="Dashboard"
         title="Good morning 👋"
-        subtitle="Detect plant diseases faster with PlantDx AI."
+        subtitle="Detect plant diseases faster with Photonyx AI."
         action={
           <Link
             to="/detect"
@@ -53,7 +53,7 @@ export default function Dashboard() {
           Good morning 👋
         </h1>
         <p className="mt-1 text-sm text-muted dark:text-muted-dark">
-          Detect plant diseases faster with PlantDx AI.
+          Detect plant diseases faster with Photonyx AI.
         </p>
         <Link
           to="/detect"

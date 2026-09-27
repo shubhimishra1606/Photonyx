@@ -19,7 +19,7 @@ export default function StatCard({ icon: Icon, label, value, suffix = '', tint =
         <p className="text-sm font-medium text-muted dark:text-muted-dark">{label}</p>
         <span
           className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br text-white',
+            'flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br text-white',
             tints[tint]
           )}
         >
