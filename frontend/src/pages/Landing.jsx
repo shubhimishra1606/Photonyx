@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import Logo from '../components/Logo'
+
 import { plants } from '../data/mockData'
 import { useTheme } from '../contexts/ThemeContext'
 import { Moon, Sun } from 'lucide-react'
@@ -60,10 +61,10 @@ export default function Landing() {
         <Logo />
         <div className="flex items-center gap-3">
           <Link
-            to="/dashboard"
-            className="hidden text-sm font-medium text-muted dark:text-muted-dark hover:text-ink dark:hover:text-ink-dark sm:block"
+            to="/auth"
+            className="rounded-full bg-forest-600 px-5 py-2.5 text-sm font-medium text-white shadow-softer hover:bg-forest-700"
           >
-            Go to dashboard
+            Login / Sign Up
           </Link>
           <button
             onClick={toggleTheme}

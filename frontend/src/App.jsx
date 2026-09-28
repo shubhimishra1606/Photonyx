@@ -9,6 +9,7 @@ import History from './pages/History'
 import Plants from './pages/Plants'
 import PlantDetail from './pages/PlantDetail'
 import Settings from './pages/Settings'
+import Auth from "./pages/Auth";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/detect" element={<Detect />} />
