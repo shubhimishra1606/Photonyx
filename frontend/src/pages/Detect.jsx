@@ -12,6 +12,8 @@ import PredictionCard from '../components/PredictionCard'
 import { validateImageFile } from '../utils/validators'
 import { predictDisease } from '../services/api'
 import { useToast } from '../contexts/ToastContext'
+import { auth } from '../firebase'
+import { saveScan } from '../services/firestone'
 
 const STATES = {
   IDLE: 'idle',
@@ -234,10 +236,24 @@ export default function Detect() {
     try {
       const prediction = await predictDisease(imageFile)
 
+      const user = auth.currentUser
+      if (!user) throw new Error('Please log in again before saving this scan.')
+
       setResult(prediction)
       setStatus(STATES.RESULT)
-
-      showToast('Prediction completed', 'success')
+      try {
+        await saveScan(user.uid, {
+          plant: prediction.plant,
+          disease: prediction.disease,
+          confidence: prediction.confidence,
+          isHealthy: prediction.isHealthy,
+          fileName: prediction.fileName,
+        })
+        showToast('Prediction completed and saved to scan history', 'success')
+      } catch (saveError) {
+        console.error('Could not save scan history:', saveError)
+        showToast('Prediction completed, but scan history could not be saved.', 'error')
+      }
     } catch (error) {
       console.error(error)
 

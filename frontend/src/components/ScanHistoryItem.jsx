@@ -12,9 +12,11 @@ export default function ScanHistoryItem({ scan, onView }) {
       whileHover={{ x: 2 }}
       className="flex items-center gap-4 rounded-xl border border-black/5 dark:border-white/10 bg-surface dark:bg-surface-dark px-4 py-3.5"
     >
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-forest-50 dark:bg-white/5 text-2xl">
-        {scan.image}
-      </span>
+      {scan.imageUrl ? (
+        <img src={scan.imageUrl} alt={`${scan.plant} scan`} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+      ) : (
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-forest-50 dark:bg-white/5 text-2xl">{scan.image || '🌿'}</span>
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">

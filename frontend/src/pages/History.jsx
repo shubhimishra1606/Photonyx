@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { History as HistoryIcon } from 'lucide-react'
 import Header from '../components/Header'
 import SearchBar from '../components/SearchBar'
@@ -6,10 +6,11 @@ import ScanHistoryItem from '../components/ScanHistoryItem'
 import EmptyState from '../components/EmptyState'
 import Modal from '../components/Modal'
 import StatusBadge from '../components/StatusBadge'
-import { scanHistory } from '../data/mockData'
 import { formatDate } from '../utils/validators'
 import { CONFIDENCE_THRESHOLD } from '../utils/constants'
 import { cn } from '../utils/classNames'
+import { auth } from '../firebase'
+import { getUserScans } from '../services/firestone'
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -20,13 +21,39 @@ const FILTERS = [
 const PAGE_SIZE = 6
 
 export default function History() {
+  const [scanHistory, setScanHistory] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [selectedScan, setSelectedScan] = useState(null)
 
+  useEffect(() => {
+    let active = true
+    const loadScans = async () => {
+      try {
+        const user = auth.currentUser
+        if (!user) throw new Error('Not signed in')
+        const scans = await getUserScans(user.uid)
+        if (active) setScanHistory(scans.map((scan) => ({
+          ...scan,
+          date: scan.scannedAt,
+          image: '🌿',
+        })))
+      } catch (error) {
+        console.error('Could not load scan history:', error)
+        if (active) setLoadError(true)
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    loadScans()
+    return () => { active = false }
+  }, [])
+
   const filtered = useMemo(() => {
-    return scanHistory.filter((scan) => {
+      return scanHistory.filter((scan) => {
       const matchesSearch =
         scan.plant.toLowerCase().includes(search.toLowerCase()) ||
         scan.disease.toLowerCase().includes(search.toLowerCase())
@@ -36,7 +63,7 @@ export default function History() {
         (filter === 'diseased' && !scan.isHealthy)
       return matchesSearch && matchesFilter
     })
-  }, [search, filter])
+  }, [scanHistory, search, filter])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -84,11 +111,17 @@ export default function History() {
         </div>
       </div>
 
-      {paginated.length === 0 ? (
+      {loading ? (
+        <p className="py-8 text-center text-sm text-muted dark:text-muted-dark">Loading scan history...</p>
+      ) : loadError ? (
+        <p className="py-8 text-center text-sm text-red-600">Could not load scan history. Check your connection and Firestore rules.</p>
+      ) : paginated.length === 0 ? (
         <EmptyState
           icon={HistoryIcon}
-          title="No scans found"
-          description="Try a different search term or filter to find what you're looking for."
+          title={scanHistory.length === 0 && filter === 'all' && !search ? 'No scans saved yet' : 'No scans found'}
+          description={scanHistory.length === 0 && filter === 'all' && !search
+            ? 'Run a plant scan while logged in. Its result will appear here.'
+            : 'Try a different search term or filter to find what you’re looking for.'}
         />
       ) : (
         <div className="space-y-3">
@@ -127,9 +160,11 @@ export default function History() {
         {selectedScan && (
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-forest-50 dark:bg-white/5 text-4xl">
-                {selectedScan.image}
-              </span>
+              {selectedScan.imageUrl ? (
+                <img src={selectedScan.imageUrl} alt={`${selectedScan.plant} leaf scan`} className="h-16 w-16 rounded-2xl object-cover" />
+              ) : (
+                <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-forest-50 dark:bg-white/5 text-4xl">{selectedScan.image || '🌿'}</span>
+              )}
               <div>
                 <p className="text-lg font-semibold text-ink dark:text-ink-dark">
                   {selectedScan.plant}

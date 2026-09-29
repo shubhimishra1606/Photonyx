@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -8,8 +9,10 @@ import {
   Cpu,
 } from 'lucide-react'
 import Logo from './Logo'
-import { currentUser, modelInfo } from '../data/mockData'
+import { modelInfo } from '../data/mockData'
 import { cn } from '../utils/classNames'
+import { auth } from '../firebase'
+import { getUserProfile } from '../services/firestone'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,6 +23,26 @@ const NAV_ITEMS = [
 ]
 
 export default function Sidebar() {
+  const [farmerName, setFarmerName] = useState(auth.currentUser?.displayName || 'Farmer')
+
+  useEffect(() => {
+    let active = true
+    const loadFarmerName = async () => {
+      const user = auth.currentUser
+      if (!user) return
+      try {
+        const profile = await getUserProfile(user.uid)
+        if (active) setFarmerName(profile?.personal?.name || user.displayName || 'Farmer')
+      } catch (error) {
+        console.error('Could not load farmer name:', error)
+      }
+    }
+    loadFarmerName()
+    return () => { active = false }
+  }, [])
+
+  const initials = farmerName.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'F'
+
   return (
     <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:border-r lg:border-black/5 dark:border-white/5 bg-surface dark:bg-surface-dark">
       <div className="px-6 py-6">
@@ -49,14 +72,14 @@ export default function Sidebar() {
       <div className="px-3 pb-5 pt-3 border-t border-black/5 dark:border-white/5 mx-3 space-y-3">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-forest-500 to-teal-500 text-xs font-semibold text-white">
-            {currentUser.avatarInitials}
+            {initials}
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-ink dark:text-ink-dark">
-              {currentUser.name}
+              {farmerName}
             </p>
             <p className="truncate text-xs text-muted dark:text-muted-dark">
-              {currentUser.role}
+              Farmer
             </p>
           </div>
         </div>

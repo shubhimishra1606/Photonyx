@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Moon, Sun, Bell, Globe, Cpu, Info, Leaf } from 'lucide-react'
 import Header from '../components/Header'
-import { currentUser, modelInfo } from '../data/mockData'
+import { modelInfo } from '../data/mockData'
 import { formatDate } from '../utils/validators'
 import { useTheme } from '../contexts/ThemeContext'
 import { useToast } from '../contexts/ToastContext'
 import { cn } from '../utils/classNames'
+import { auth } from '../firebase'
+import { getUserProfile, saveUserProfile } from '../services/firestone'
 
 function ToggleSwitch({ checked, onChange, label }) {
   return (
@@ -56,11 +58,69 @@ export default function Settings() {
   const [notifications, setNotifications] = useState(true)
   const [language, setLanguage] = useState('English')
   const [threshold, setThreshold] = useState(modelInfo.defaultConfidenceThreshold)
-  const [name, setName] = useState(currentUser.name)
-  const [email, setEmail] = useState(currentUser.email)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState(auth.currentUser?.email || '')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [farmName, setFarmName] = useState('')
+  const [farmLocation, setFarmLocation] = useState('')
+  const [farmSize, setFarmSize] = useState('')
+  const [crops, setCrops] = useState('')
+  const [loadingProfile, setLoadingProfile] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    showToast('Settings saved', 'success')
+  useEffect(() => {
+    let active = true
+    const loadProfile = async () => {
+      try {
+        const user = auth.currentUser
+        if (!user) return
+        const profile = await getUserProfile(user.uid)
+        if (!active || !profile) return
+        setName(profile.personal?.name || '')
+        setEmail(user.email || profile.personal?.email || '')
+        setPhone(profile.personal?.phone || '')
+        setAddress(profile.personal?.address || '')
+        setFarmName(profile.farm?.farmName || '')
+        setFarmLocation(profile.farm?.location || '')
+        setFarmSize(profile.farm?.size || '')
+        setCrops((profile.farm?.crops || []).join(', '))
+      } catch (error) {
+        console.error('Could not load farmer profile:', error)
+        if (active) showToast('Could not load your saved profile.', 'error')
+      } finally {
+        if (active) setLoadingProfile(false)
+      }
+    }
+    loadProfile()
+    return () => { active = false }
+  }, [])
+
+  const handleSave = async () => {
+    const user = auth.currentUser
+    if (!user) {
+      showToast('Please log in again to save your profile.', 'error')
+      return
+    }
+    setSaving(true)
+    try {
+      await saveUserProfile(user.uid, {
+        personal: { name: name.trim(), phone: phone.trim(), address: address.trim(), email: user.email || email },
+        farm: {
+          farmName: farmName.trim(),
+          location: farmLocation.trim(),
+          size: farmSize.trim(),
+          crops: crops.split(',').map((crop) => crop.trim()).filter(Boolean),
+        },
+        updatedAt: new Date().toISOString(),
+      })
+      showToast('Profile and farm details updated.', 'success')
+    } catch (error) {
+      console.error('Could not save farmer profile:', error)
+      showToast('Could not save changes. Check your connection and Firestore rules.', 'error')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -73,7 +133,7 @@ export default function Settings() {
       <SectionCard title="Profile">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-forest-500 to-teal-500 text-lg font-semibold text-white">
-            {currentUser.avatarInitials}
+            {(name || email || 'F').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
           </div>
           <button className="rounded-full border border-black/10 dark:border-white/10 px-4 py-2 text-sm font-medium text-ink dark:text-ink-dark hover:border-forest-300">
             Change photo
@@ -94,9 +154,39 @@ export default function Settings() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              readOnly
+              title="Email address is managed by Firebase Authentication"
               className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark focus:border-forest-400"
             />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-muted dark:text-muted-dark">Phone</span>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark" />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-xs font-medium text-muted dark:text-muted-dark">Address / village</span>
+            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark" />
+          </label>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Farm Details">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-xs font-medium text-muted dark:text-muted-dark">Farm name</span>
+            <input type="text" value={farmName} onChange={(e) => setFarmName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark" />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-muted dark:text-muted-dark">Farm location</span>
+            <input type="text" value={farmLocation} onChange={(e) => setFarmLocation(e.target.value)} className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark" />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-muted dark:text-muted-dark">Farm size</span>
+            <input type="text" placeholder="e.g. 2 acres" value={farmSize} onChange={(e) => setFarmSize(e.target.value)} className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark" />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-muted dark:text-muted-dark">Crops (comma separated)</span>
+            <input type="text" placeholder="Wheat, rice, tomato" value={crops} onChange={(e) => setCrops(e.target.value)} className="mt-1.5 w-full rounded-xl border border-black/10 dark:border-white/10 bg-surface dark:bg-surface-dark px-3.5 py-2.5 text-sm text-ink dark:text-ink-dark" />
           </label>
         </div>
       </SectionCard>
@@ -192,9 +282,10 @@ export default function Settings() {
       <div className="flex justify-end">
         <button
           onClick={handleSave}
+          disabled={saving || loadingProfile}
           className="rounded-full bg-forest-600 px-6 py-2.5 text-sm font-medium text-white shadow-softer hover:bg-forest-700"
         >
-          Save Changes
+          {loadingProfile ? 'Loading profile…' : saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
     </div>

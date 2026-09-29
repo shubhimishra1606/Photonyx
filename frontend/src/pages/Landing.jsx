@@ -99,14 +99,14 @@ export default function Landing() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/detect"
+              to="/auth"
               className="flex items-center gap-2 rounded-full bg-forest-600 px-6 py-3 text-sm font-medium text-white shadow-softer hover:bg-forest-700"
             >
               Detect a Disease
               <ArrowRight size={16} />
             </Link>
             <Link
-              to="/plants"
+              to="/auth"
               className="rounded-full border border-black/10 dark:border-white/10 px-6 py-3 text-sm font-medium text-ink dark:text-ink-dark hover:border-forest-300"
             >
               Explore Plants
@@ -235,7 +235,7 @@ export default function Landing() {
             Upload a leaf photo and see what Photonyx detects in seconds.
           </p>
           <Link
-            to="/detect"
+            to="/auth"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-forest-700 hover:bg-white/90"
           >
             Start Your First Scan

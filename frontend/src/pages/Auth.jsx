@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 import Logo from "../components/Logo";
 import { signup, login } from "../services/auth";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "../firebase";
+import { saveUserProfile } from "../services/firestone";
+
+const parseCrops = (value) => value.split(",").map((crop) => crop.trim()).filter(Boolean);
 
 export default function Auth() {
 
@@ -21,8 +26,20 @@ export default function Auth() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  const recaptchaVerifier = useRef(null);
 
   const [toast, setToast] = useState(null);
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [farmName, setFarmName] = useState("");
+  const [farmLocation, setFarmLocation] = useState("");
+  const [farmSize, setFarmSize] = useState("");
+  const [crops, setCrops] = useState("");
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -32,17 +49,84 @@ export default function Auth() {
     }, 3000);
   };
 
+  const sendPhoneOtp = async () => {
+    const normalizedPhone = phoneNumber.replace(/\s/g, "");
+    if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      showToast("Enter a valid phone number with country code, e.g. +919876543210.", "error");
+      return;
+    }
+
+    try {
+      if (!recaptchaVerifier.current) {
+        recaptchaVerifier.current = new RecaptchaVerifier(auth, "recaptcha-container", {
+          size: "invisible",
+        });
+      }
+
+      const result = await signInWithPhoneNumber(
+        auth,
+        normalizedPhone,
+        recaptchaVerifier.current,
+      );
+      setConfirmationResult(result);
+      showToast("OTP sent. Check your phone.", "success");
+    } catch (error) {
+      recaptchaVerifier.current?.clear();
+      recaptchaVerifier.current = null;
+      showToast(error.message || "Could not send the OTP. Please try again.", "error");
+    }
+  };
+
+  const verifyPhoneOtp = async () => {
+    if (!otp.trim()) {
+      showToast("Enter the OTP you received.", "error");
+      return;
+    }
+
+    try {
+      const credential = await confirmationResult.confirm(otp.trim());
+      if (isSignup) {
+        await saveUserProfile(credential.user.uid, {
+          personal: { name: name.trim(), phone: credential.user.phoneNumber || phoneNumber, address: address.trim() },
+          farm: { farmName: farmName.trim(), location: farmLocation.trim(), size: farmSize.trim(), crops: parseCrops(crops) },
+          createdAt: new Date().toISOString(),
+        });
+      }
+      navigate("/dashboard");
+    } catch (error) {
+      showToast(error.code === "auth/invalid-verification-code"
+        ? "That OTP is incorrect. Check it and try again."
+        : error.message || "Could not verify the OTP.", "error");
+    }
+  };
+
   const handleSubmit = async (e) => {
   e.preventDefault();
+
+  if (method === "phone") {
+    if (confirmationResult) await verifyPhoneOtp();
+    else await sendPhoneOtp();
+    return;
+  }
 
   try {
     if (isSignup) {
       await signup(email, password);
-      console.log("Account created successfully");
-      showToast("Account created successfully!", "success");
-      navigate("/dashboard")
+      // Email signup signs out before verification; keep the details until verified login.
+      localStorage.setItem("photonyx_pending_profile", JSON.stringify({
+        personal: { name: name.trim(), phone: phone.trim(), address: address.trim(), email: email.trim() },
+        farm: { farmName: farmName.trim(), location: farmLocation.trim(), size: farmSize.trim(), crops: parseCrops(crops) },
+        createdAt: new Date().toISOString(),
+      }));
+      setIsSignup(false);
+      showToast("Verification email sent. Verify it, then log in. Check spam folder if not found.", "success");
     } else {
-      await login(email, password);
+      const userCredential = await login(email, password);
+      const pendingProfile = localStorage.getItem("photonyx_pending_profile");
+      if (pendingProfile) {
+        await saveUserProfile(userCredential.user.uid, JSON.parse(pendingProfile));
+        localStorage.removeItem("photonyx_pending_profile");
+      }
       console.log("Login successful");
       showToast("Login successful!", "success")
       navigate("/dashboard")
@@ -51,6 +135,8 @@ export default function Auth() {
     console.error(error.message);
     if (error.code === "auth/email-already-in-use") {
       showToast("This email is already registered.", "error");
+    } else if (error.code === "auth/email-not-verified") {
+      showToast("Verification link sent again. Verify your email, then log in.", "error");
     } else if (error.code === "auth/invalid-credential") {
       showToast("Incorrect email or password.", "error");
     } else if (error.code === "auth/weak-password") {
@@ -117,7 +203,12 @@ export default function Auth() {
             {/* Login method */}
             <div className="mb-6 grid grid-cols-2 rounded-xl bg-black/5 dark:bg-white/5 p-1">
               <button
-                onClick={() => setMethod("email")}
+                onClick={() => {
+                  recaptchaVerifier.current?.clear();
+                  recaptchaVerifier.current = null;
+                  setMethod("email");
+                  setConfirmationResult(null);
+                }}
                 className={`rounded-lg py-2.5 text-sm font-medium transition ${
                   method === "email"
                     ? "bg-white dark:bg-white/10 text-forest-600 dark:text-forest-300 shadow-sm"
@@ -131,7 +222,12 @@ export default function Auth() {
               </button>
 
               <button
-                onClick={() => setMethod("phone")}
+                onClick={() => {
+                  recaptchaVerifier.current?.clear();
+                  recaptchaVerifier.current = null;
+                  setMethod("phone");
+                  setConfirmationResult(null);
+                }}
                 className={`rounded-lg py-2.5 text-sm font-medium transition ${
                   method === "phone"
                     ? "bg-white dark:bg-white/10 text-forest-600 dark:text-forest-300 shadow-sm"
@@ -147,7 +243,7 @@ export default function Auth() {
 
             {/* Name - Signup only */}
             {isSignup && (
-              <div className="mb-4">
+              <div className="mb-4 space-y-3">
                 <label className="mb-1.5 block text-sm font-medium text-ink dark:text-ink-dark">
                   Name
                 </label>
@@ -155,8 +251,17 @@ export default function Auth() {
                 <input
                   type="text"
                   placeholder="Your name"
-                  className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-transparent px-4 py-3 text-sm outline-none focus:border-forest-500"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm"
                 />
+                <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm" />
+                <input type="text" placeholder="Home address / village" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm" />
+                <p className="pt-2 text-sm font-semibold text-ink dark:text-ink-dark">Farm details</p>
+                <input type="text" placeholder="Farm name" value={farmName} onChange={(e) => setFarmName(e.target.value)} className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm" />
+                <input type="text" placeholder="Farm location / village" value={farmLocation} onChange={(e) => setFarmLocation(e.target.value)} className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm" />
+                <input type="text" placeholder="Farm size (e.g. 2 acres)" value={farmSize} onChange={(e) => setFarmSize(e.target.value)} className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm" />
+                <input type="text" placeholder="Crops, comma separated (e.g. wheat, rice)" value={crops} onChange={(e) => setCrops(e.target.value)} className="w-full rounded-xl border border-black/10 bg-transparent px-4 py-3 text-sm" />
               </div>
             )}
 
@@ -208,7 +313,7 @@ export default function Auth() {
             )}
 
             {/* Phone Login */}
-            {method === "phone" && (
+            {method === "phone" && !confirmationResult && (
               <div className="mb-6">
                 <label className="mb-1.5 block text-sm font-medium text-ink dark:text-ink-dark">
                   Phone Number
@@ -222,7 +327,9 @@ export default function Auth() {
 
                   <input
                     type="tel"
-                    placeholder="+91 9876543210"
+                    placeholder="+919876543210"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-transparent py-3 pl-11 pr-4 text-sm outline-none focus:border-forest-500"
                   />
                 </div>
@@ -233,13 +340,32 @@ export default function Auth() {
               </div>
             )}
 
+            {method === "phone" && confirmationResult && (
+              <div className="mb-6">
+                <label className="mb-1.5 block text-sm font-medium text-ink dark:text-ink-dark">
+                  Verification code
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="Enter the OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-transparent px-4 py-3 text-sm outline-none focus:border-forest-500"
+                />
+              </div>
+            )}
+
+            {method === "phone" && <div id="recaptcha-container" />}
+
             {/* Submit */}
             <button
               onClick={handleSubmit}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-5 py-3 text-sm font-medium text-white hover:bg-forest-700"
             >
               {method === "phone"
-                ? "Send OTP"
+                ? confirmationResult ? "Verify & Continue" : "Send OTP"
                 : isSignup
                 ? "Create Account"
                 : "Login"}
