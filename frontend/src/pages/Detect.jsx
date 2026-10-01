@@ -236,6 +236,12 @@ export default function Detect() {
     try {
       const prediction = await predictDisease(imageFile)
 
+    if (prediction.rejected) {
+      showToast(prediction.message, 'error')
+      setStatus(STATES.SELECTED)
+      return
+    }
+
       const user = auth.currentUser
       if (!user) throw new Error('Please log in again before saving this scan.')
 

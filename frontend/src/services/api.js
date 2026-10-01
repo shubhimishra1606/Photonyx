@@ -15,6 +15,14 @@ export async function predictDisease(imageFile) {
 
   const data = await response.json();
 
+  if (data.status && data.status !== "ok") {
+  return {
+    rejected: true,
+    status: data.status,
+    message: data.message,
+  };
+}
+
   const parts = data.disease.split("___");
 
   const plant = parts[0]
