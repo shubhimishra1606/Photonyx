@@ -19,7 +19,7 @@ app.add_middleware(
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 MODELS_DIR = Path(__file__).resolve().parent / "models"
-DISEASE_PATH = MODELS_DIR / "plantdx_efficientnet_b0.pth"
+DISEASE_PATH = MODELS_DIR / "plantdx_v2.pth"
 GATE_PATH = MODELS_DIR / "leaf_gate.pth"
 
 LEAF_THRESHOLD = 0.50  
