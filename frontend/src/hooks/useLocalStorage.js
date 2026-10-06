@@ -14,7 +14,6 @@ export function useLocalStorage(key, defaultValue) {
     try {
       window.localStorage.setItem(key, JSON.stringify(value))
     } catch {
-      // Ignore write errors (e.g. private browsing storage limits)
     }
   }, [key, value])
 

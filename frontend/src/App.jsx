@@ -12,7 +12,10 @@ import History from './pages/History'
 import Plants from './pages/Plants'
 import PlantDetail from './pages/PlantDetail'
 import Settings from './pages/Settings'
+import Advice from './pages/Advice'
 import Auth from "./pages/Auth";
+
+import { wakeBackend } from './services/api'
 
 function VerifiedRoute() {
   const [status, setStatus] = useState('loading')
@@ -40,6 +43,11 @@ function VerifiedRoute() {
 }
 
 export default function App() {
+
+   useEffect(() => {
+    wakeBackend()
+  }, [])
+  
   return (
     <ThemeProvider>
       <ToastProvider>
@@ -51,6 +59,7 @@ export default function App() {
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/detect" element={<Detect />} />
+                <Route path="/advice" element={<Advice />} />
                 <Route path="/history" element={<History />} />
                 <Route path="/plants" element={<Plants />} />
                 <Route path="/plants/:plantName" element={<PlantDetail />} />

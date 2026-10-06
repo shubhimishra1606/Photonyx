@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { Sparkles, AlertCircle } from 'lucide-react'
+import { Sparkles, AlertCircle, MessageCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import ConfidenceMeter from './ConfidenceMeter'
 import StatusBadge from './StatusBadge'
 import DiseaseInfo from './DiseaseInfo'
@@ -8,6 +9,7 @@ import EmptyState from './EmptyState'
 import { CONFIDENCE_THRESHOLD } from '../utils/constants'
 
 export default function PredictionCard({ result }) {
+  const navigate = useNavigate()
   if (!result) {
     return (
       <EmptyState
@@ -76,6 +78,17 @@ export default function PredictionCard({ result }) {
           ))}
         </div>
       </div>
+
+      {!result.isHealthy && !isLowConfidence && (
+        <button
+          type="button"
+          onClick={() => navigate('/advice', { state: { diagnosis: result } })}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-forest-700 sm:w-auto"
+        >
+          <MessageCircle size={17} />
+          Get advice
+        </button>
+      )}
 
       <p className="rounded-xl bg-forest-50/60 dark:bg-white/3 px-4 py-3 text-xs leading-relaxed text-muted dark:text-muted-dark">
         AI predictions are for informational purposes and should be verified by an

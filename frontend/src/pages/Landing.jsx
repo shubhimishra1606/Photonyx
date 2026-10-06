@@ -181,7 +181,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Supported plants */}
+      {/* Supported plants
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
         <div className="flex items-end justify-between">
           <h2 className="text-2xl font-semibold tracking-tight text-ink dark:text-ink-dark">
@@ -205,7 +205,7 @@ export default function Landing() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* Why Photonyx */}
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">

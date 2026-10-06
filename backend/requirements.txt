@@ -1,5 +1,8 @@
-fastapi 
-uvicorn 
-python-multipart 
-pillow 
+fastapi
+uvicorn
+python-multipart
+pillow
 timm
+torch
+torchvision
+python-dotenv

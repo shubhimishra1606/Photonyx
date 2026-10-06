@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Leaf, ShieldCheck } from 'lucide-react'
 import Header from '../components/Header'
 import EmptyState from '../components/EmptyState'
 import { plants } from '../data/mockData'
 import { cn } from '../utils/classNames'
+import { loadPlantCatalog } from '../services/plantCatalog'
 
 const SEVERITY_STYLES = {
   low: 'bg-forest-50 text-forest-700 border-forest-200 dark:bg-forest-900/30 dark:text-forest-300 dark:border-forest-800',
@@ -14,7 +16,23 @@ const SEVERITY_STYLES = {
 
 export default function PlantDetail() {
   const { plantName } = useParams()
-  const plant = plants.find((p) => p.id === plantName)
+  const [catalog, setCatalog] = useState(plants)
+  const [catalogLoaded, setCatalogLoaded] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    loadPlantCatalog()
+      .then((supportedPlants) => { if (active) setCatalog(supportedPlants) })
+      .catch((error) => console.error('Could not load model plant catalog:', error))
+      .finally(() => { if (active) setCatalogLoaded(true) })
+    return () => { active = false }
+  }, [])
+
+  const plant = catalog.find((p) => p.id === plantName)
+
+  if (!plant && !catalogLoaded) {
+    return <Header eyebrow="Plant Library" title="Loading plant details…" />
+  }
 
   if (!plant) {
     return (
@@ -76,7 +94,7 @@ export default function PlantDetail() {
       </div>
 
       <div>
-        <h2 className="text-base font-semibold text-ink dark:text-ink-dark">Common Diseases</h2>
+        <h2 className="text-base font-semibold text-ink dark:text-ink-dark">Conditions the model can detect</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           {plant.conditions.map((condition) => (
             <div key={condition.id} className="card p-5">
@@ -84,14 +102,14 @@ export default function PlantDetail() {
                 <h3 className="text-base font-semibold text-ink dark:text-ink-dark">
                   {condition.name}
                 </h3>
-                <span
+                {condition.severity && <span
                   className={cn(
                     'shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium capitalize',
                     SEVERITY_STYLES[condition.severity]
                   )}
                 >
                   {condition.severity} severity
-                </span>
+                </span>}
               </div>
 
               <div className="mt-3">
@@ -99,7 +117,7 @@ export default function PlantDetail() {
                   Symptoms
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-ink dark:text-ink-dark">
-                  {condition.symptoms}
+                  {condition.symptoms || 'This is a condition label the current detection model can recognize. Symptoms can vary; confirm the diagnosis if the plant is worsening.'}
                 </p>
               </div>
 
@@ -108,7 +126,7 @@ export default function PlantDetail() {
                   Prevention Tips
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-muted dark:text-muted-dark">
-                  {condition.prevention}
+                  {condition.prevention || 'Detailed prevention guidance is not yet available in the library. Ask the advice assistant or contact a local agricultural expert for crop-specific guidance.'}
                 </p>
               </div>
             </div>

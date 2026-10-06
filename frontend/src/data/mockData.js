@@ -1,6 +1,3 @@
-// Central mock data source for Photonyx.
-// When the FastAPI backend is ready, this file's shape should mirror
-// the real API responses so components don't need to change.
 
 export const plants = [
   {
@@ -508,5 +505,5 @@ export const currentUser = {
 export const modelInfo = {
   version: 'Photonyx v1.0',
   lastUpdated: '2026-08-30',
-  defaultConfidenceThreshold: 60,
+  defaultConfidenceThreshold: 30,
 }

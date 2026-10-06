@@ -1,17 +1,33 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Sprout } from 'lucide-react'
 import Header from '../components/Header'
 import SearchBar from '../components/SearchBar'
 import PlantCard from '../components/PlantCard'
 import EmptyState from '../components/EmptyState'
 import { plants } from '../data/mockData'
+import { loadPlantCatalog } from '../services/plantCatalog'
 
 export default function Plants() {
   const [search, setSearch] = useState('')
+  const [catalog, setCatalog] = useState(plants)
+  const [loadingCatalog, setLoadingCatalog] = useState(true)
+  const [catalogError, setCatalogError] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    loadPlantCatalog()
+      .then((supportedPlants) => { if (active) setCatalog(supportedPlants) })
+      .catch((error) => {
+        console.error('Could not load model plant catalog:', error)
+        if (active) setCatalogError(true)
+      })
+      .finally(() => { if (active) setLoadingCatalog(false) })
+    return () => { active = false }
+  }, [])
 
   const filtered = useMemo(
-    () => plants.filter((plant) => plant.name.toLowerCase().includes(search.toLowerCase())),
-    [search]
+    () => catalog.filter((plant) => plant.name.toLowerCase().includes(search.toLowerCase())),
+    [catalog, search]
   )
 
   return (
@@ -19,7 +35,11 @@ export default function Plants() {
       <Header
         eyebrow="Plant Library"
         title="Plant Library"
-        subtitle="Browse supported plants and the conditions Photonyx can detect."
+        subtitle={loadingCatalog
+          ? 'Loading plants supported by the current detection model…'
+          : catalogError
+            ? 'Showing the saved plant list. Start the backend to load the current model’s full catalog.'
+            : `Browse ${catalog.length} plants supported by the current detection model.`}
       />
       <div className="lg:hidden">
         <h1 className="text-2xl font-semibold tracking-tight text-ink dark:text-ink-dark">
