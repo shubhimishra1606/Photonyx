@@ -151,7 +151,7 @@ export default function Advice() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <section className="card flex min-h-[620px] flex-col overflow-hidden">
+        <section className="card flex min-h-155 flex-col overflow-hidden">
           <div className="flex items-center gap-3 border-b border-black/5 px-5 py-4 dark:border-white/10">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-forest-50 text-forest-700 dark:bg-forest-900/40 dark:text-forest-300"><Bot size={20} /></span>
             <div>
